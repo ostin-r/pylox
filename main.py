@@ -19,7 +19,7 @@ class LoxInterpreter:
             self.run(user_input)
 
     def run(self, data: str) -> None:
-        scanner = Scanner(data)
+        scanner = Scanner(data, self)
         tokens = scanner.scan_tokens()
 
         # for now just print the tokens

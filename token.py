@@ -1,15 +1,4 @@
 
-class Token:
-    def __init__(self, token_type: Tokentoken_type, lexeme: str, literal: str, line: int):
-        self.token_type = token_type
-        self.lexeme = lexeme
-        self.literal = literal
-        self.line = line
-
-    def __repr__(self):
-        return token_type + " " + lexeme + " " + literal
-
-
 class TokenType:
     LEFT_PAREN = '('
     RIGHT_PAREN = ')'
@@ -50,4 +39,16 @@ class TokenType:
     VAR = 'var'
     WHILE = 'while'
     EOF = 'end_of_file'
+
+
+class Token:
+    def __init__(self, token_type: TokenType, lexeme: str, literal: str, line: int):
+        self.token_type = token_type
+        self.lexeme = lexeme
+        self.literal = literal
+        self.line = line
+
+    def __repr__(self):
+        return str(self.token_type) + " " + self.lexeme + " " + self.literal
+
 
