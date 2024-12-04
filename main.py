@@ -19,13 +19,12 @@ class LoxInterpreter:
             self.run(user_input)
 
     def run(self, data: str) -> None:
-        print('running file!')
-        # scanner = Scanner(data)
-        # tokens = scanner.scan_tokens()
+        scanner = Scanner(data)
+        tokens = scanner.scan_tokens()
 
-        # # for now just print the tokens
-        # for token in tokens:
-        #     print(token)
+        # for now just print the tokens
+        for token in tokens:
+            print(token)
 
     def pylox_error(self, line_no: int, message: str) -> None:
         self.had_error = True
