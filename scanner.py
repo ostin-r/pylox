@@ -39,23 +39,33 @@ class Scanner:
     def is_end_of_file(self):
         return self.current >= len(self.source)
 
-    def add_token(self, token_type: TokenType, literal: dict | None = None):
+    def add_token(self, token_type: TokenType, literal: str | None = None):
         text = self.source[self.start:self.current]
         self.tokens.append(Token(token_type, text, literal, self.line))
 
     def scan_token(self):
         c = self.advance()
         match c:
-            case '(': self.add_token(TokenType.LEFT_PAREN)
-            case ')': self.add_token(TokenType.RIGHT_PAREN)
-            case '{': self.add_token(TokenType.LEFT_BRACE)
-            case '}': self.add_token(TokenType.RIGHT_BRACE)
-            case ',': self.add_token(TokenType.COMMA)
-            case '.': self.add_token(TokenType.DOT)
-            case '-': self.add_token(TokenType.MINUS)
-            case '+': self.add_token(TokenType.PLUS)
-            case ';': self.add_token(TokenType.SEMICOLON)
-            case '*': self.add_token(TokenType.STAR)
+            case '(':
+                self.add_token(TokenType.LEFT_PAREN)
+            case ')':
+                self.add_token(TokenType.RIGHT_PAREN)
+            case '{':
+                self.add_token(TokenType.LEFT_BRACE)
+            case '}':
+                self.add_token(TokenType.RIGHT_BRACE)
+            case ',':
+                self.add_token(TokenType.COMMA)
+            case '.':
+                self.add_token(TokenType.DOT)
+            case '-':
+                self.add_token(TokenType.MINUS)
+            case '+':
+                self.add_token(TokenType.PLUS)
+            case ';':
+                self.add_token(TokenType.SEMICOLON)
+            case '*':
+                self.add_token(TokenType.STAR)
             case '!':
                 if self.match_next('='):
                     token_type = TokenType.BANG_EQUAL
@@ -101,5 +111,17 @@ class Scanner:
 
 
     def string(self):
-        pass
+        # multi-line string:
+        while (self.peek() != '"' and not self.is_end_of_file()):
+            if self.peek() == '\n':
+                self.line += 1
+            self.advance()
 
+        if (self.is_end_of_file()):
+            self.interpreter.pylox_error(self.line, 'Unterminated string')
+            return None
+
+        self.advance()
+        value = self.source[self.start + 1: self.current - 1]
+        self.add_token(TokenType.STRING, value)
+          
