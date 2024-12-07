@@ -11,6 +11,25 @@ class Scanner:
         self.current = 0
         self.line = 1
 
+        self.keywords = {
+            'and': TokenType.AND,
+            'class': TokenType.CLASS,
+            'else': TokenType.ELSE,
+            'false': TokenType.FALSE,
+            'for': TokenType.FOR,
+            'fun': TokenType.FUN,
+            'if': TokenType.IF,
+            'nil': TokenType.NIL,
+            'or': TokenType.OR,
+            'print': TokenType.PRINT,
+            'return': TokenType.RETURN,
+            'super': TokenType.SUPER,
+            'this': TokenType.THIS,
+            'true': TokenType.TRUE,
+            'var': TokenType.VAR,
+            'while': TokenType.WHILE,
+        }
+
     def scan_tokens(self):
         while not self.is_end_of_file():
             self.start = self.current
@@ -27,6 +46,11 @@ class Scanner:
         if self.is_end_of_file():
             return '\0'
         return self.source[self.current]
+
+    def peek_next(self):
+        if self.current + 1 >= len(self.source):
+            return '\0'
+        return self.source[self.current + 1]
 
     def match_next(self, expected_char: str) -> bool:
         if self.is_end_of_file():
@@ -107,11 +131,17 @@ class Scanner:
             case '"':
                 self.string()
             case _:
-                self.interpreter.pylox_error(self.line, 'unexpected character')
+                if self.is_digit(c):
+                    self.number()
+                else:
+                    self.interpreter.pylox_error(self.line, 'unexpected character')
+
+
+    def is_digit(c):
+        return c >= '0' and c <= '9'
 
 
     def string(self):
-        # multi-line string:
         while (self.peek() != '"' and not self.is_end_of_file()):
             if self.peek() == '\n':
                 self.line += 1
@@ -124,4 +154,26 @@ class Scanner:
         self.advance()
         value = self.source[self.start + 1: self.current - 1]
         self.add_token(TokenType.STRING, value)
-          
+
+
+    def number(self):
+        while self.is_digit(self.peek()):
+            self.advance()
+        if self.peek() == '.' and self.is_digit(self.peek_next()):
+            self.advance()
+            while self.is_digit(self.peek()):
+                self.advance()
+        self.add_token(TokenType.NUMBER, self.source[self.start:self.current])
+
+
+    def identifier(self):
+        while self.is_alphanumeric(self.peek()):
+            self.advance()
+        self.add_token(TokenType.IDENTIFIER)
+            
+    def is_alpha(self, c: str):
+        return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or c == '_'
+
+    def is_alphanumeric(self, c: str):
+        return self.is_alpha(c) or self.is_digit(c)
+    
