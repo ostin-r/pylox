@@ -1,9 +1,7 @@
-from typing import List
 from lox_token import Token, TokenType
-from main import LoxInterpreter
 
 class Scanner:
-    def __init__(self, source: str, interpreter: LoxInterpreter):
+    def __init__(self, source: str, interpreter):
         self.source = source
         self.interpreter = interpreter
         self.tokens = []
@@ -133,11 +131,13 @@ class Scanner:
             case _:
                 if self.is_digit(c):
                     self.number()
+                elif self.is_alpha(c):
+                    self.identifier()
                 else:
                     self.interpreter.pylox_error(self.line, 'unexpected character')
 
 
-    def is_digit(c):
+    def is_digit(self, c):
         return c >= '0' and c <= '9'
 
 
@@ -169,8 +169,10 @@ class Scanner:
     def identifier(self):
         while self.is_alphanumeric(self.peek()):
             self.advance()
-        self.add_token(TokenType.IDENTIFIER)
-            
+        text = self.source[self.start:self.current]
+        token_type = self.keywords.get(text, TokenType.IDENTIFIER)
+        self.add_token(token_type)
+
     def is_alpha(self, c: str):
         return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or c == '_'
 
