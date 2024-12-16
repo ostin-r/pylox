@@ -7,13 +7,13 @@ import sys
 class GenerateAST:
     def main(self):
         if len(sys.argv) != 1:
-            print("Incorrect amount of arguments, usage: generate_ast.py")
+            print("Incorrect amount of arguments, usage: generate_ast.py in the working directory")
             sys.exit()
         print('Creating file...')
         type_descriptions = {
             'Binary': [['Expr', 'left'], ['Token', 'operator'], ['Expr', 'right']],
             'Grouping': [['Expr', 'expression']],
-            'Literal': [['str', 'value']],
+            'Literal': [['object', 'value']],
             'Unary': [['Token', 'operator'], ['Expr', 'right']]
         }
         self.define_ast("expr", type_descriptions)
@@ -36,6 +36,10 @@ class GenerateAST:
                 f.write('\n')
                 for argument_types in class_info:
                     f.write(f'\t\tself.{argument_types[1]} = {argument_types[1]}\n')
+                f.write('\n')
+
+                f.write('\tdef accept(self, visitor):\n')
+                f.write(f'\t\tself.visit_{class_name.lower()}_{base_name}(self)\n')
                 f.write('\n')
 
 if __name__ == '__main__':
