@@ -1,7 +1,9 @@
 from lox_token import Token
 
+
 class Expr:
 	pass
+
 
 class Binary(Expr):
 	def __init__(self, left: Expr, operator: Token, right: Expr):
@@ -14,7 +16,8 @@ class Binary(Expr):
 		self.right = right
 
 	def accept(self, visitor):
-		self.visit_binary_expr(self)
+		return visitor.visit_binary_expr(self)
+
 
 class Grouping(Expr):
 	def __init__(self, expression: Expr):
@@ -23,7 +26,8 @@ class Grouping(Expr):
 		self.expression = expression
 
 	def accept(self, visitor):
-		self.visit_grouping_expr(self)
+		return visitor.visit_grouping_expr(self)
+
 
 class Literal(Expr):
 	def __init__(self, value: object):
@@ -32,7 +36,8 @@ class Literal(Expr):
 		self.value = value
 
 	def accept(self, visitor):
-		self.visit_literal_expr(self)
+		return visitor.visit_literal_expr(self)
+
 
 class Unary(Expr):
 	def __init__(self, operator: Token, right: Expr):
@@ -43,5 +48,5 @@ class Unary(Expr):
 		self.right = right
 
 	def accept(self, visitor):
-		self.visit_unary_expr(self)
+		return visitor.visit_unary_expr(self)
 
