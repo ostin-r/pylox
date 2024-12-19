@@ -21,7 +21,7 @@ class ASTPrinter:
     def parenthesize(self, name, exprs):
         expr_str = f'({name} '
         for expr in exprs:
-            expr_str += f'{expr.accept(self)}'
+            expr_str += f'{expr.accept(self)} '
         expr_str += ')'
         return expr_str
 

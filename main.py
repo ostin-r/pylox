@@ -1,5 +1,7 @@
 import sys
 from scanner import Scanner
+from parser import Parser
+from ast_printer import ASTPrinter
 
 class LoxInterpreter:
     def __init__(self):
@@ -23,9 +25,11 @@ class LoxInterpreter:
         scanner = Scanner(data, self)
         tokens = scanner.scan_tokens()
 
-        # for now just print the tokens
-        for token in tokens:
-            print(token)
+        parser = Parser(tokens, self)
+        expr = parser.parse()
+        print(expr)
+        ast_printer = ASTPrinter()
+        ast_printer.print(expr)
 
     def pylox_error(self, line_no: int, message: str) -> None:
         self.had_error = True
