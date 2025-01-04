@@ -27,7 +27,8 @@ class LoxInterpreter:
 
         parser = Parser(tokens, self)
         expr = parser.parse()
-        print(expr)
+        if self.had_error:
+            return None
         ast_printer = ASTPrinter()
         ast_printer.print(expr)
 
