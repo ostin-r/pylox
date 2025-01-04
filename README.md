@@ -2,7 +2,7 @@
 ### Under Construction
 ![10%](https://progress-bar.xyz/10?title=Progress) <br/>
 :ballot_box_with_check: Scan Tokens <br/>
-:white_large_square: Generate Abstract Syntax Tree (AST) <br/>
+:ballot_box_with_check: Generate Abstract Syntax Tree (AST) <br/>
 :white_large_square: Interpret AST (basic - no classes, functions, or variables) <br/>
 :white_large_square: Add support for variables <br/>
 :white_large_square: Add support for functions <br/>
