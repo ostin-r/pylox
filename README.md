@@ -8,5 +8,5 @@
 :white_large_square: Add support for functions <br/>
 :white_large_square: Add support for classes <br/>
 
-Lox is a learning language written by Robert Nystrom, the "learn to create a programming language" GOAT
+Lox is a learning language written by Robert Nystrom, the "learn to create a programming language" GOAT<br/>
 Since I use programming languages all the time, I figured I'd get under the hood and learn about how these things actually work.
