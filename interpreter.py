@@ -1,5 +1,6 @@
 from expr import Expr
 from token import TokenType
+from runtime_error import LoxRuntimeError
 
 class Interpreter:
     def visit_literal_expr(self, expr: Expr):
@@ -10,6 +11,7 @@ class Interpreter:
 
     def visit_unary_expr(self, expr: Expr):
         right = self.evaluate(expr.right)
+        self.check_number_operand(expr.operator, right)
         match expr.operator.token_type:
             case TokenType.MINUS:
                 return -right
@@ -21,13 +23,21 @@ class Interpreter:
         right = self.evaluate(expr.right)
         match expr.operator.token_type:
             case TokenType.MINUS:
+                # number check must be used on each individual case because addition is overridden by strings
+                self.check_number_operand_binary(expr.operator, left, right)
                 return left - right
             case TokenType.SLASH:
+                self.check_number_operand_binary(expr.operator, left, right)
                 return left / right
             case TokenType.STAR:
+                self.check_number_operand_binary(expr.operator, left, right)
                 return left * right
             case TokenType.PLUS:
-                return left + right
+                if isinstance(left, str) and isinstance(right, str):
+                    return left + right
+                if isinstance(left, float) and isinstance(right, float):
+                    return left + right
+                raise LoxRuntimeError(expr.operator, "Operands must be matching strings or numbers")
             
 
     def evaluate(self, expr: Expr):
@@ -47,7 +57,16 @@ class Interpreter:
 
     def is_equal(self, a, b):
         """
-            A simple function for now, custom behavior for objects, etc. may be added here later
+            A simple function for now. Custom behavior for objects, etc. may be added here later
         """
         return a == b
+
+    def check_number_operand(self, operator, operand):
+        if not isinstance(operand, float):
+            raise LoxRuntimeError(operator, 'Operand must be a number')
+
+    def check_number_operand_binary(self, operator, left, right):
+        if not isinstance(left, float) or not isinstance(right, (float, int)):
+            raise LoxRuntimeError(operator, 'Operands must be numbers')
+
            
