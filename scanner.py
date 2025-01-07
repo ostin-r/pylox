@@ -134,7 +134,7 @@ class Scanner:
                 elif self.is_alpha(c):
                     self.identifier()
                 else:
-                    self.interpreter.pylox_error(self.line, 'unexpected character')
+                    self.interpreter.pylox_error(self.line, f'unexpected character: {c}')
 
 
     def is_digit(self, c):
