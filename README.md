@@ -1,9 +1,9 @@
 # Pylox - A Lox Interpreter
 ### Under Construction
-![30%](https://progress-bar.xyz/30?title=Progress) <br/>
+![40%](https://progress-bar.xyz/40?title=Progress) <br/>
 :ballot_box_with_check: Scan Tokens <br/>
 :ballot_box_with_check: Generate Abstract Syntax Tree (AST) <br/>
-:white_large_square: Interpret AST (basic - no classes, functions, or variables) <br/>
+:ballot_box_with_check: Interpret AST (basic - no classes, functions, or variables) <br/>
 :white_large_square: Add support for variables <br/>
 :white_large_square: Add support for functions <br/>
 :white_large_square: Add support for classes <br/>
