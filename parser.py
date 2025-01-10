@@ -2,6 +2,7 @@ from typing import List
 from lox_token import Token, TokenType
 from expr import Literal, Binary, Unary, Grouping
 from error_handling import ParseError
+from stmt import PrintStatement, ExpressionStatement
 
 # recursive decent pattern for parsing tokens
 # 
@@ -21,12 +22,25 @@ class Parser:
         self.interpreter = interpreter
 
     def parse(self):
-        # for now this can handle only a single expression
-        # adjust this when adding classes, etc.
-        try:
-            return self.expression()
-        except ParseError:
-            return None
+        statements = []
+        while not self.is_end_of_file():
+            statements.append(self.statement())
+        return statements
+
+    def statement(self):
+        if self.match([TokenType.PRINT]):
+            return self.print_statement()
+        return self.expression_statement()
+
+    def print_statement(self):
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expected ';' after print statement.")
+        return PrintStatement(expr)
+
+    def expression_statement(self):
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expected ';' after expression.")
+        return ExpressionStatement(expr)
 
     def expression(self):
         return self.equality()
@@ -90,7 +104,7 @@ class Parser:
             return Grouping(expr)
         raise self.error(self.peek(), 'Expected expression')
 
-    def match(self, token_types):
+    def match(self, token_types: list) -> bool:
         if self.peek().token_type in token_types:
             self.advance()
             return True

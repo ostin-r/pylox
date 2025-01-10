@@ -1,7 +1,7 @@
 import sys
 from scanner import Scanner
 from parser import Parser
-from ast_printer import ASTPrinter
+# from ast_printer import ASTPrinter
 from runtime_error import LoxRuntimeError
 from interpreter import Interpreter
 
@@ -30,14 +30,12 @@ class Lox:
         tokens = scanner.scan_tokens()
 
         parser = Parser(tokens, self)
-        expr = parser.parse()
-        if self.had_error:
+        statements = parser.parse()
+        if self.had_error or self.had_runtime_error:
             return None
-        if self.had_runtime_error:
-            return None
-        ast_printer = ASTPrinter()
-        ast_printer.print(expr)
-        self.interpreter.interpret(expr)
+        # ast_printer = ASTPrinter()
+        # ast_printer.print(expr)
+        self.interpreter.interpret(statements)
 
     def pylox_error(self, line_no: int, message: str) -> None:
         self.had_error = True

@@ -1,19 +1,35 @@
 from expr import Expr
 from lox_token import TokenType
 from runtime_error import LoxRuntimeError
+from stmt import PrintStatement, ExpressionStatement, Stmt
+from typing import List
 
 class Interpreter:
 
     def __init__(self, main):
         self.main = main
     
-    def interpret(self, expr: Expr):
+    def interpret(self, statements: List[Stmt]):
         try:
-            value = self.evaluate(expr)
-            string_value = self.stringify(value)
-            print(string_value)
+            for statement in statements:
+                self.execute(statement)
         except LoxRuntimeError as e:
             self.main.runtime_error(e)
+
+    def evaluate(self, expr: Expr):
+        return expr.accept(self)
+
+    def execute(self, stmt: Stmt):
+        stmt.accept(self)
+
+    def visit_expression_statement(self, stmt: ExpressionStatement):
+        self.evaluate(stmt.expression)
+        return None
+
+    def visit_print_statement(self, stmt: PrintStatement):
+        value = self.evaluate(stmt.expression)
+        print(value)
+        return None
     
     def visit_literal_expr(self, expr: Expr):
         return expr.value
@@ -50,10 +66,6 @@ class Interpreter:
                 if isinstance(left, float) and isinstance(right, float):
                     return left + right
                 raise LoxRuntimeError(expr.operator, "Operands must be matching strings or numbers")
-            
-
-    def evaluate(self, expr: Expr):
-        return expr.accept(self)
 
     def is_truthy(self, value):
         """
