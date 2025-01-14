@@ -1,4 +1,5 @@
 from expr import Expr
+from lox_token import Token
 
 class Stmt:
 	def accept(self, visitor):
@@ -22,3 +23,13 @@ class PrintStatement(Stmt):
 	def accept(self, visitor):
 		return visitor.visit_print_statement(self)
 
+class VarStatement(Stmt):
+	def __init__(self, name: Token, initializer: Expr):
+		assert isinstance(name, Token)
+		assert isinstance(initializer, (Expr, None))
+
+		self.name = name
+		self.initializer = initializer
+
+	def accept(self, visitor):
+		return visitor.visit_var_statement(self)

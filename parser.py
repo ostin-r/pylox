@@ -1,8 +1,8 @@
 from typing import List
 from lox_token import Token, TokenType
-from expr import Literal, Binary, Unary, Grouping
+from expr import Literal, Binary, Unary, Grouping, VarExpr
 from error_handling import ParseError
-from stmt import PrintStatement, ExpressionStatement
+from stmt import PrintStatement, ExpressionStatement, VarStatement
 
 # recursive decent pattern for parsing tokens
 # 
@@ -24,8 +24,17 @@ class Parser:
     def parse(self):
         statements = []
         while not self.is_end_of_file():
-            statements.append(self.statement())
+            statements.append(self.declaration())
         return statements
+
+    def declaration(self):
+        try:
+            if self.match([TokenType.VAR]):
+                return self.var_declaration()
+            return self.statement()
+        except ParseError:
+            self.synchronize()
+            return None
 
     def statement(self):
         if self.match([TokenType.PRINT]):
@@ -36,6 +45,14 @@ class Parser:
         expr = self.expression()
         self.consume(TokenType.SEMICOLON, "Expected ';' after print statement.")
         return PrintStatement(expr)
+
+    def var_declaration(self):
+        name = self.consume(TokenType.IDENTIFIER, "Expected variable name")
+        initializer = None
+        if self.match([TokenType.EQUAL]):
+            initializer = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expected ';' after variable declaration")
+        return VarStatement(name, initializer)
 
     def expression_statement(self):
         expr = self.expression()
@@ -95,9 +112,11 @@ class Parser:
         if self.match([TokenType.FALSE]):
             return Literal(False)
         if self.match([TokenType.TRUE]):
-            return Literal(False)
+            return Literal(True)
         if self.match([TokenType.STRING, TokenType.NUMBER]):
             return Literal(self.previous().literal)
+        if self.match([TokenType.IDENTIFIER]):
+            return VarExpr(self.previous())
         if self.match([TokenType.LEFT_PAREN]):
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, 'Expect ")" after expression')
@@ -113,7 +132,8 @@ class Parser:
     def consume(self, expected_token_type, error_message):
         if self.peek().token_type == expected_token_type:
             return self.advance()
-        raise self.error(error_message)
+        error_message += f" Got {self.peek().token_type} instead."
+        raise self.error(self.peek(), error_message)
         
     def check(self, check_type):
         if self.is_end_of_file():

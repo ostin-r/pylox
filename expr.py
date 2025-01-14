@@ -5,6 +5,15 @@ class Expr:
 	pass
 
 
+class VarExpr(Expr):
+	def __init__(self, name: Token):
+		assert isinstance(name, Token)
+		self.name = name
+
+	def accept(self, visitor):
+		return visitor.visit_var_expr(self)
+
+
 class Binary(Expr):
 	def __init__(self, left: Expr, operator: Token, right: Expr):
 		assert isinstance(left, Expr)

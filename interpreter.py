@@ -1,13 +1,15 @@
 from expr import Expr
 from lox_token import TokenType
 from runtime_error import LoxRuntimeError
-from stmt import PrintStatement, ExpressionStatement, Stmt
+from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt
 from typing import List
+from environment import Environment
 
 class Interpreter:
 
     def __init__(self, main):
         self.main = main
+        self.environment = Environment()
     
     def interpret(self, statements: List[Stmt]):
         try:
@@ -30,6 +32,13 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         print(value)
         return None
+
+    def visit_var_statement(self, stmt: VarStatement):
+        value = None
+        if stmt.initializer is not None:
+            value = self.evaluate(stmt.initializer)
+        self.environment.define(stmt.name.lexeme, value)
+        return None
     
     def visit_literal_expr(self, expr: Expr):
         return expr.value
@@ -45,6 +54,9 @@ class Interpreter:
                 return -right
             case TokenType.BANG:
                 return not right
+
+    def visit_var_expr(self, expr: Expr):
+        return self.environment.get(expr.name)
 
     def visit_binary_expr(self, expr: Expr):
         left = self.evaluate(expr.left)
