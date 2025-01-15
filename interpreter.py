@@ -1,4 +1,4 @@
-from expr import Expr
+from expr import Expr, AssignExpr
 from lox_token import TokenType
 from runtime_error import LoxRuntimeError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt
@@ -39,6 +39,11 @@ class Interpreter:
             value = self.evaluate(stmt.initializer)
         self.environment.define(stmt.name.lexeme, value)
         return None
+
+    def visit_assign_expr(self, expr: AssignExpr):
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
     
     def visit_literal_expr(self, expr: Expr):
         return expr.value

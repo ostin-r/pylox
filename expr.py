@@ -14,6 +14,17 @@ class VarExpr(Expr):
 		return visitor.visit_var_expr(self)
 
 
+class AssignExpr(Expr):
+	def __init__(self, name: Token, value: Expr):
+		assert isinstance(name, Token)
+		assert isinstance(value, Expr)
+		self.name = name
+		self.value = value
+
+	def accept(self, visitor):
+		return visitor.visit_assign_expr(self)
+
+
 class Binary(Expr):
 	def __init__(self, left: Expr, operator: Token, right: Expr):
 		assert isinstance(left, Expr)

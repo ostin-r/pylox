@@ -1,2 +1,3 @@
 var a = 10;
-print a;
+a = 12;
+print a + 2;
