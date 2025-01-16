@@ -1,5 +1,6 @@
 from expr import Expr
 from lox_token import Token
+from typing import List
 
 class Stmt:
 	def accept(self, visitor):
@@ -33,3 +34,12 @@ class VarStatement(Stmt):
 
 	def accept(self, visitor):
 		return visitor.visit_var_statement(self)
+
+class BlockStatement(Stmt):
+	def __init__(self, statements: List[Stmt]):
+		assert isinstance(statements, list)
+
+		self.statements = statements
+
+	def accept(self, visitor):
+		return visitor.visit_block_statement(self)

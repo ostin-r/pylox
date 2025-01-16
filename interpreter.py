@@ -1,7 +1,7 @@
 from expr import Expr, AssignExpr
 from lox_token import TokenType
 from runtime_error import LoxRuntimeError
-from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt
+from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement
 from typing import List
 from environment import Environment
 
@@ -23,6 +23,18 @@ class Interpreter:
 
     def execute(self, stmt: Stmt):
         stmt.accept(self)
+
+    def execute_block(self, statements: list[Stmt], environment: Environment):
+        previous = self.environment
+        try:
+            self.environment = environment
+            for statement in statements:
+                self.execute(statement)
+        finally:
+            self.environment = previous
+                             
+    def visit_block_statement(self, stmt: BlockStatement):
+        self.execute_block(stmt.statements, Environment(self.environment))
 
     def visit_expression_statement(self, stmt: ExpressionStatement):
         self.evaluate(stmt.expression)
