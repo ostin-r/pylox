@@ -1,11 +1,21 @@
 from expr import Expr
 from lox_token import Token
 from typing import List
-from ast_printer import ASTPrinter
 
 class Stmt:
 	def accept(self, visitor):
 		pass
+
+class WhileStatement(Stmt):
+	def __init__(self, condition: Expr, body: Stmt):
+		assert isinstance(condition, Expr)
+		assert isinstance(body, Stmt)
+
+		self.condition = condition
+		self.body = body
+
+	def accept(self, visitor):
+		return visitor.visit_while_statement(self)
 
 class ExpressionStatement(Stmt):
 	def __init__(self, expression: Expr):
@@ -28,7 +38,8 @@ class PrintStatement(Stmt):
 class VarStatement(Stmt):
 	def __init__(self, name: Token, initializer: Expr):
 		assert isinstance(name, Token)
-		assert isinstance(initializer, (Expr, None))
+		if initializer is not None:
+			assert isinstance(initializer, Expr)
 
 		self.name = name
 		self.initializer = initializer

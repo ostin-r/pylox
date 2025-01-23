@@ -1,7 +1,8 @@
 from expr import Expr, AssignExpr, LogicalExpr
 from lox_token import TokenType
 from runtime_error import LoxRuntimeError
-from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement, IfStatement
+from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement, IfStatement, \
+    WhileStatement
 from typing import List
 from environment import Environment
 
@@ -58,6 +59,11 @@ class Interpreter:
         if stmt.initializer is not None:
             value = self.evaluate(stmt.initializer)
         self.environment.define(stmt.name.lexeme, value)
+        return None
+
+    def visit_while_statement(self, stmt: WhileStatement):
+        while self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.body)
         return None
 
     def visit_assign_expr(self, expr: AssignExpr):
