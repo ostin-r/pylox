@@ -5,6 +5,20 @@ class Expr:
 	pass
 
 
+class LogicalExpr(Expr):
+	def __init__(self, left: Expr, operator: Token, right: Expr):
+		assert isinstance(left, Expr)
+		assert isinstance(right, Expr)
+		assert isinstance(operator, Token)
+
+		self.left = left
+		self.right = right
+		self.operator = operator
+
+	def accept(self, visitor):
+		return visitor.visit_logical_expr(self)
+
+
 class VarExpr(Expr):
 	def __init__(self, name: Token):
 		assert isinstance(name, Token)

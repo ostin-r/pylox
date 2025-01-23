@@ -1,19 +1,13 @@
-var a = "global a";
-var b = "global b";
-var c = "global c";
-{
-  var a = "outer a";
-  var b = "outer b";
-  {
-    var a = "inner a";
-    print a;
-    print b;
-    print c;
-  }
-  print a;
-  print b;
-  print c;
-}
-print a;
-print b;
+
+print "hi" or 2;
+print nil or 2;
+
+var c = 10 > 20;
 print c;
+
+var a = 10;
+if (a < 100 and a < 200 and a < 12 or a == 10) {
+  print "a passed";
+} else {
+  print "a failed";
+}

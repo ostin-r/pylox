@@ -1,18 +1,11 @@
 from typing import List
 from lox_token import Token, TokenType
-from expr import Literal, Binary, Unary, Grouping, VarExpr, AssignExpr
+from expr import Literal, Binary, Unary, Grouping, VarExpr, AssignExpr, LogicalExpr
 from error_handling import ParseError
-from stmt import PrintStatement, ExpressionStatement, VarStatement, BlockStatement
+from stmt import PrintStatement, ExpressionStatement, VarStatement, BlockStatement, IfStatement
 
 # recursive decent pattern for parsing tokens
-# 
-# order of precedence, lowest to highest:
-# equality (lowest)
-# comparison
-# addition
-# multiplication
-# unary
-# literal (highest)
+
 
 class Parser:
     def __init__(self, tokens: List[Token], interpreter):
@@ -37,11 +30,23 @@ class Parser:
             return None
 
     def statement(self):
+        if self.match([TokenType.IF]):
+            return self.if_statement()
         if self.match([TokenType.PRINT]):
             return self.print_statement()
         if self.match([TokenType.LEFT_BRACE]):
             return BlockStatement(self.block())
         return self.expression_statement()
+
+    def if_statement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expected '(' after if statement")
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expected ')' after if statement")
+        then_branch = self.statement()
+        else_branch = None
+        if self.match([TokenType.ELSE]):
+            else_branch = self.statement()
+        return IfStatement(condition, then_branch, else_branch)
 
     def print_statement(self):
         expr = self.expression()
@@ -63,7 +68,7 @@ class Parser:
 
     def block(self):
         statements = []
-        while not self.check(TokenType.RIGHT_BRACE):
+        while not self.check(TokenType.RIGHT_BRACE) and not self.is_end_of_file():
             statements.append(self.declaration())
         self.consume(TokenType.RIGHT_BRACE, "Expected '}' after block.")
         return statements
@@ -72,7 +77,7 @@ class Parser:
         return self.assignment()
 
     def assignment(self):
-        expr = self.equality()
+        expr = self.or_exp()
         if self.match([TokenType.EQUAL]):
             equals = self.previous()
             value = self.assignment()
@@ -80,6 +85,22 @@ class Parser:
                 name = expr.name
                 return AssignExpr(name, value)
             self.error(equals, "Invalid assignment target.")
+        return expr
+
+    def or_exp(self):
+        expr = self.and_exp()
+        while self.match([TokenType.OR]):
+            operator = self.previous()
+            right = self.and_exp()
+            expr = LogicalExpr(expr, operator, right)
+        return expr
+
+    def and_exp(self):
+        expr = self.equality()
+        while self.match([TokenType.AND]):
+            operator = self.previous()
+            right = self.equality()
+            expr = LogicalExpr(expr, operator, right)
         return expr
 
     def equality(self):
@@ -133,6 +154,8 @@ class Parser:
             return Literal(False)
         if self.match([TokenType.TRUE]):
             return Literal(True)
+        if self.match([TokenType.NIL]):
+            return Literal(None)
         if self.match([TokenType.STRING, TokenType.NUMBER]):
             return Literal(self.previous().literal)
         if self.match([TokenType.IDENTIFIER]):
@@ -175,6 +198,7 @@ class Parser:
         return self.tokens[self.current - 1]
 
     def error(self, token, error_message):
+        print(token)
         self.interpreter.pylox_error(token.line, error_message)
         # Return object instead of raising to allow calling method to decide what to do with it
         return ParseError()

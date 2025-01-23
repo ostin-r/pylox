@@ -1,6 +1,7 @@
 from expr import Expr
 from lox_token import Token
 from typing import List
+from ast_printer import ASTPrinter
 
 class Stmt:
 	def accept(self, visitor):
@@ -43,3 +44,18 @@ class BlockStatement(Stmt):
 
 	def accept(self, visitor):
 		return visitor.visit_block_statement(self)
+
+class IfStatement(Stmt):
+	def __init__(self, condition: Expr, then_branch: Stmt, else_branch: Stmt):
+		assert isinstance(condition, Expr)
+		assert isinstance(then_branch, Stmt)
+		if else_branch is not None:
+			assert isinstance(else_branch, Stmt)
+
+		self.condition = condition
+		self.then_branch = then_branch
+		self.else_branch = else_branch
+
+	def accept(self, visitor):
+		return visitor.visit_if_statement(self)
+

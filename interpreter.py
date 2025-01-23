@@ -1,7 +1,7 @@
-from expr import Expr, AssignExpr
+from expr import Expr, AssignExpr, LogicalExpr
 from lox_token import TokenType
 from runtime_error import LoxRuntimeError
-from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement
+from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement, IfStatement
 from typing import List
 from environment import Environment
 
@@ -40,6 +40,14 @@ class Interpreter:
         self.evaluate(stmt.expression)
         return None
 
+    def visit_if_statement(self, if_statement: IfStatement):
+        if_condition = self.evaluate(if_statement.condition)
+        if self.is_truthy(if_condition):
+            self.execute(if_statement.then_branch)
+        elif if_statement.else_branch is not None:
+            self.execute(if_statement.else_branch)
+        return None
+
     def visit_print_statement(self, stmt: PrintStatement):
         value = self.evaluate(stmt.expression)
         print(value)
@@ -59,6 +67,16 @@ class Interpreter:
     
     def visit_literal_expr(self, expr: Expr):
         return expr.value
+
+    def visit_logical_expr(self, expr: LogicalExpr):
+        left = self.evaluate(expr.left)
+        if expr.operator.token_type == TokenType.OR:
+            if self.is_truthy(left):
+                return left
+        else:
+            if not self.is_truthy(left):
+                return left
+        return self.evaluate(expr.right)
 
     def visit_grouping_expr(self, expr: Expr):
         return self.evaluate(expr.expression)
@@ -95,10 +113,22 @@ class Interpreter:
                 if isinstance(left, float) and isinstance(right, float):
                     return left + right
                 raise LoxRuntimeError(expr.operator, "Operands must be matching strings or numbers")
+            case TokenType.GREATER:
+                return left > right
+            case TokenType.GREATER_EQUAL:
+                return left >= right
+            case TokenType.LESS:
+                return left < right
+            case TokenType.LESS_EQUAL:
+                return left <= right
+            case TokenType.BANG_EQUAL:
+                return not self.is_equal(left, right)
+            case TokenType.EQUAL_EQUAL:
+                return self.is_equal(left, right)
 
     def is_truthy(self, value):
         """
-            Lox considers false and nil as falsey
+            False and Nil are falsy
             Everything else is truthy
         """
         if value is None:
@@ -109,9 +139,10 @@ class Interpreter:
             return True
 
     def is_equal(self, a, b):
-        """
-            A simple function for now. Custom behavior for objects, etc. may be added here later
-        """
+        if a is None and b is None:
+            return True
+        if a is None:
+            return False
         return a == b
 
     def check_number_operand(self, operator, operand):
