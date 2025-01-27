@@ -1,14 +1,17 @@
 from typing import List
 from lox_token import Token, TokenType
-from expr import Literal, Binary, Unary, Grouping, VarExpr, AssignExpr, LogicalExpr
+from expr import Literal, Binary, Unary, Grouping, VarExpr, AssignExpr, LogicalExpr, CallExpr
 from error_handling import ParseError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, BlockStatement, IfStatement, \
-                 WhileStatement
+                 WhileStatement, FunctionStatement
 
 # recursive decent pattern for parsing tokens
 
 
 class Parser:
+
+    MAX_FUNC_PARAMETERS = 255
+    
     def __init__(self, tokens: List[Token], interpreter):
         assert isinstance(tokens, list)
         self.tokens = tokens
@@ -23,6 +26,8 @@ class Parser:
 
     def declaration(self):
         try:
+            if self.match([TokenType.FUN]):
+                return self.function_declaration('function')
             if self.match([TokenType.VAR]):
                 return self.var_declaration()
             return self.statement()
@@ -112,6 +117,23 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expected ';' after expression.")
         return ExpressionStatement(expr)
 
+    def function_declaration(self, kind: str):
+        name = self.consume(TokenType.IDENTIFIER, f'Expected {kind} name')
+
+        self.consume(TokenType.LEFT_PAREN, f'Expected "(" after {kind} name')
+        parameters = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            parameters.append(self.consume(TokenType.IDENTIFIER, 'Expected parameter name'))
+            while self.match([TokenType.COMMA]):
+                if len(parameters) > self.MAX_FUNC_PARAMETERS:
+                    self.error(self.peek(), 'Parameter length exceeded: cannot have more than 255 parameters')
+                parameters.append(self.consume(TokenType.IDENTIFIER, 'Expected parameter name'))
+        self.consume(TokenType.RIGHT_PAREN, 'Expected ")" after parameters')
+
+        self.consume(TokenType.LEFT_BRACE, f'Expected "{'{'}" before {kind} body')  # block() expects right brace to be parsed already
+        body = self.block()
+        return FunctionStatement(name, parameters, body)
+
     def block(self):
         statements = []
         while not self.check(TokenType.RIGHT_BRACE) and not self.is_end_of_file():
@@ -193,7 +215,29 @@ class Parser:
             operator = self.previous()
             right = self.unary()
             return Unary(operator, right)
-        return self.primary()
+        return self.call()
+
+    def call(self):
+        expr = self.primary()
+        while True:
+            if self.match([TokenType.LEFT_PAREN]):
+                expr = self.finish_call(expr)
+            else:
+                break
+        return expr
+
+    def finish_call(self, callee):
+        # handle arguments of a function call
+        arguments = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            arguments.append(self.expression())
+            while self.match([TokenType.COMMA]):
+                if len(arguments) > self.MAX_FUNC_PARAMETERS:
+                    self.error(callee, 'Maximum number of arguments provided to function: 255')
+                arguments.append(self.expression())
+        paren = self.consume(TokenType.RIGHT_PAREN, 'Expected ")" after function arguments.')
+        return CallExpr(callee, paren, arguments)
+            
 
     def primary(self):
         if self.match([TokenType.FALSE]):

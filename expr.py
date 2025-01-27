@@ -1,8 +1,24 @@
 from lox_token import Token
+from typing import List
 
 
 class Expr:
 	pass
+
+
+class CallExpr(Expr):
+	def __init__(self, callee: Expr, paren: Token, arguments: List[Expr] or None):
+		assert isinstance(callee, Expr)
+		assert isinstance(paren, Token)
+		if arguments is not None:
+			assert isinstance(arguments, list)
+
+		self.callee = callee
+		self.paren = paren
+		self.arguments = arguments
+
+	def accept(self, visitor):
+		return visitor.visit_call_expr(self)
 
 
 class LogicalExpr(Expr):

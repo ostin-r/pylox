@@ -4,7 +4,21 @@ from typing import List
 
 class Stmt:
 	def accept(self, visitor):
-		pass
+		raise Exception('accept() method not yet implemented')
+
+class FunctionStatement(Stmt):
+	def __init__(self, name: Token, params: List[Token], body: List[Stmt]):
+		assert isinstance(name, Token)
+		assert isinstance(params, list)
+		assert isinstance(body, list)
+
+		self.name = name
+		self.params = params
+		self.body = body
+
+	def accept(self, visitor):
+		return visitor.visit_function_statement(self)
+
 
 class WhileStatement(Stmt):
 	def __init__(self, condition: Expr, body: Stmt):

@@ -1,16 +1,33 @@
+import time
 from expr import Expr, AssignExpr, LogicalExpr
 from lox_token import TokenType
 from runtime_error import LoxRuntimeError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement, IfStatement, \
-    WhileStatement
+    WhileStatement, FunctionStatement
 from typing import List
 from environment import Environment
+from lox_callable import LoxCallable
+from lox_function import LoxFunction
+
 
 class Interpreter:
 
     def __init__(self, main):
         self.main = main
-        self.environment = Environment()
+        self.globals = Environment()     # maintains a reference to outer most scope
+        self.environment = self.globals  # changes as the interpreter enters blocks
+
+        class Clock(LoxCallable):
+            def arity(self):
+                return 0
+
+            def call(self, interpreter, arguments):
+                return time.time()
+
+            def __str__(self):
+                return "<native fn 'clock'>"
+
+        self.globals.define('clock', Clock())
     
     def interpret(self, statements: List[Stmt]):
         try:
@@ -39,6 +56,11 @@ class Interpreter:
 
     def visit_expression_statement(self, stmt: ExpressionStatement):
         self.evaluate(stmt.expression)
+        return None
+
+    def visit_function_statement(self, stmt: FunctionStatement):
+        function = LoxFunction(stmt)
+        self.environment.define(stmt.name.lexeme, function)
         return None
 
     def visit_if_statement(self, if_statement: IfStatement):
@@ -131,6 +153,19 @@ class Interpreter:
                 return not self.is_equal(left, right)
             case TokenType.EQUAL_EQUAL:
                 return self.is_equal(left, right)
+
+    def visit_call_expr(self, expr: Expr):
+        callee = self.evaluate(expr.callee)
+        if not isinstance(callee, LoxCallable):
+            raise LoxRuntimeError(callee, 'Can only call functions and classes')
+        arguments = []
+        for argument in expr.arguments:
+            arguments.append(self.evaluate(argument))
+
+        if len(arguments) != callee.arity():
+            raise LoxRuntimeError(expr.paren, f'Expected {callee.arity()} arguments but got {len(arguments)}')
+        
+        return callee.call(self, arguments)
 
     def is_truthy(self, value):
         """
