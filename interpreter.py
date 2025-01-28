@@ -3,11 +3,12 @@ from expr import Expr, AssignExpr, LogicalExpr
 from lox_token import TokenType
 from runtime_error import LoxRuntimeError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement, IfStatement, \
-    WhileStatement, FunctionStatement
+    WhileStatement, FunctionStatement, ReturnStatement
 from typing import List
 from environment import Environment
 from lox_callable import LoxCallable
 from lox_function import LoxFunction
+from lox_return import Return
 
 
 class Interpreter:
@@ -59,7 +60,7 @@ class Interpreter:
         return None
 
     def visit_function_statement(self, stmt: FunctionStatement):
-        function = LoxFunction(stmt)
+        function = LoxFunction(stmt, self.environment)
         self.environment.define(stmt.name.lexeme, function)
         return None
 
@@ -75,6 +76,12 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         print(value)
         return None
+
+    def visit_return_statement(self, stmt: ReturnStatement):
+        value = None
+        if stmt.value is not None:
+            value = self.evaluate(stmt.value)
+        raise Return(value)
 
     def visit_var_statement(self, stmt: VarStatement):
         value = None

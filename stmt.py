@@ -6,6 +6,7 @@ class Stmt:
 	def accept(self, visitor):
 		raise Exception('accept() method not yet implemented')
 
+
 class FunctionStatement(Stmt):
 	def __init__(self, name: Token, params: List[Token], body: List[Stmt]):
 		assert isinstance(name, Token)
@@ -20,6 +21,18 @@ class FunctionStatement(Stmt):
 		return visitor.visit_function_statement(self)
 
 
+class ReturnStatement(Stmt):
+	def __init__(self, keyword: Token, value: Expr):
+		assert isinstance(keyword, Token)
+		assert isinstance(value, Expr)
+
+		self.keyword = keyword
+		self.value = value
+
+	def accept(self, visitor):
+		return visitor.visit_return_statement(self)
+
+
 class WhileStatement(Stmt):
 	def __init__(self, condition: Expr, body: Stmt):
 		assert isinstance(condition, Expr)
@@ -31,6 +44,7 @@ class WhileStatement(Stmt):
 	def accept(self, visitor):
 		return visitor.visit_while_statement(self)
 
+
 class ExpressionStatement(Stmt):
 	def __init__(self, expression: Expr):
 		assert isinstance(expression, Expr)
@@ -40,6 +54,7 @@ class ExpressionStatement(Stmt):
 	def accept(self, visitor):
 		return visitor.visit_expression_statement(self)
 
+
 class PrintStatement(Stmt):
 	def __init__(self, expression: Expr):
 		assert isinstance(expression, Expr)
@@ -48,6 +63,7 @@ class PrintStatement(Stmt):
 
 	def accept(self, visitor):
 		return visitor.visit_print_statement(self)
+
 
 class VarStatement(Stmt):
 	def __init__(self, name: Token, initializer: Expr):
@@ -61,6 +77,7 @@ class VarStatement(Stmt):
 	def accept(self, visitor):
 		return visitor.visit_var_statement(self)
 
+
 class BlockStatement(Stmt):
 	def __init__(self, statements: List[Stmt]):
 		assert isinstance(statements, list)
@@ -69,6 +86,7 @@ class BlockStatement(Stmt):
 
 	def accept(self, visitor):
 		return visitor.visit_block_statement(self)
+
 
 class IfStatement(Stmt):
 	def __init__(self, condition: Expr, then_branch: Stmt, else_branch: Stmt):

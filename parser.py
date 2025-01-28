@@ -3,7 +3,7 @@ from lox_token import Token, TokenType
 from expr import Literal, Binary, Unary, Grouping, VarExpr, AssignExpr, LogicalExpr, CallExpr
 from error_handling import ParseError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, BlockStatement, IfStatement, \
-                 WhileStatement, FunctionStatement
+                 WhileStatement, FunctionStatement, ReturnStatement
 
 # recursive decent pattern for parsing tokens
 
@@ -42,6 +42,8 @@ class Parser:
             return self.if_statement()
         if self.match([TokenType.PRINT]):
             return self.print_statement()
+        if self.match([TokenType.RETURN]):
+            return self.return_statement()
         if self.match([TokenType.WHILE]):
             return self.while_statement()
         if self.match([TokenType.LEFT_BRACE]):
@@ -96,6 +98,14 @@ class Parser:
         expr = self.expression()
         self.consume(TokenType.SEMICOLON, "Expected ';' after print statement.")
         return PrintStatement(expr)
+
+    def return_statement(self):
+        keyword = self.previous()
+        value = None
+        if not self.check(TokenType.SEMICOLON):
+            value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expected ';' after return statement.")
+        return ReturnStatement(keyword, value)
 
     def var_declaration(self):
         name = self.consume(TokenType.IDENTIFIER, "Expected variable name")
