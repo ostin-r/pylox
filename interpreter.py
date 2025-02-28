@@ -1,6 +1,6 @@
 import time
 from expr import Expr, AssignExpr, LogicalExpr
-from lox_token import TokenType
+from lox_token import TokenType, Token
 from runtime_error import LoxRuntimeError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement, IfStatement, \
     WhileStatement, FunctionStatement, ReturnStatement
@@ -17,6 +17,7 @@ class Interpreter:
         self.main = main
         self.globals = Environment()     # maintains a reference to outer most scope
         self.environment = self.globals  # changes as the interpreter enters blocks
+        self.locals = {}                 # holds depth of resolved variables
 
         class Clock(LoxCallable):
             def arity(self):
@@ -51,6 +52,9 @@ class Interpreter:
                 self.execute(statement)
         finally:
             self.environment = previous
+
+    def resolve(self, expr: Expr, depth: int):
+        self.locals[expr] = depth
                              
     def visit_block_statement(self, stmt: BlockStatement):
         self.execute_block(stmt.statements, Environment(self.environment))
@@ -97,7 +101,11 @@ class Interpreter:
 
     def visit_assign_expr(self, expr: AssignExpr):
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        distance = self.locals.get(expr)
+        if distance is not None:
+            self.environment.assign_at(distance, expr.name, value)
+        else:
+            self.globals.assign(expr.name, value)
         return value
     
     def visit_literal_expr(self, expr: Expr):
@@ -126,8 +134,15 @@ class Interpreter:
                 return not right
 
     def visit_var_expr(self, expr: Expr):
-        return self.environment.get(expr.name)
+        return self.lookup_variable(expr.name, expr)
 
+    def lookup_variable(self, name: Token, expr: Expr):
+        distance = self.locals.get(expr)
+        if distance is not None:
+            return self.environment.get_at(distance, name)
+        else:
+            return self.globals.get(name)
+            
     def visit_binary_expr(self, expr: Expr):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
@@ -147,7 +162,7 @@ class Interpreter:
                     return left + right
                 if isinstance(left, float) and isinstance(right, float):
                     return left + right
-                raise LoxRuntimeError(expr.operator, "Operands must be matching strings or numbers")
+                raise LoxRuntimeError(expr.operator, f"Operands must be matching strings or numbers, left={left} {type(left)}, right={right} {type(right)}")
             case TokenType.GREATER:
                 return left > right
             case TokenType.GREATER_EQUAL:

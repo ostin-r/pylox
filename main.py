@@ -4,6 +4,7 @@ from parser import Parser
 # from ast_printer import ASTPrinter
 from runtime_error import LoxRuntimeError
 from interpreter import Interpreter
+from resolver import Resolver
 
 class Lox:
     def __init__(self):
@@ -33,8 +34,13 @@ class Lox:
         statements = parser.parse()
         if self.had_error or self.had_runtime_error:
             return None
-        # ast_printer = ASTPrinter()
-        # ast_printer.print(expr)
+
+        resolver = Resolver(self.interpreter, self)
+        resolver.resolve_list(statements)
+
+        if self.had_error:
+            return None # stop for resolution errors
+
         self.interpreter.interpret(statements)
 
     def pylox_error(self, line_no: int, message: str) -> None:
