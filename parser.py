@@ -1,9 +1,10 @@
 from typing import List
 from lox_token import Token, TokenType
-from expr import Literal, Binary, Unary, Grouping, VarExpr, AssignExpr, LogicalExpr, CallExpr
+from expr import Literal, Binary, Unary, Grouping, VarExpr, AssignExpr, LogicalExpr, CallExpr, GetExpr, \
+                 SetExpr
 from error_handling import ParseError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, BlockStatement, IfStatement, \
-                 WhileStatement, FunctionStatement, ReturnStatement
+                 WhileStatement, FunctionStatement, ReturnStatement, ClassStatement
 
 # recursive decent pattern for parsing tokens
 
@@ -26,6 +27,8 @@ class Parser:
 
     def declaration(self):
         try:
+            if self.match([TokenType.CLASS]):
+                return self.class_declaration()
             if self.match([TokenType.FUN]):
                 return self.function_declaration('function')
             if self.match([TokenType.VAR]):
@@ -34,6 +37,18 @@ class Parser:
         except ParseError:
             self.synchronize()
             return None
+
+    def class_declaration(self):
+        name = self.consume(TokenType.IDENTIFIER, 'Expect class name')
+        self.consume(TokenType.LEFT_BRACE, 'Expect \'{\' before class body')
+
+        methods = []
+        while not self.check(TokenType.RIGHT_BRACE):
+            methods.append(self.function_declaration('method'))
+
+        self.consume(TokenType.RIGHT_BRACE, 'Expect \'}\' after class body')
+        return ClassStatement(name, methods)
+
 
     def statement(self):
         if self.match([TokenType.FOR]):
@@ -162,6 +177,8 @@ class Parser:
             if isinstance(expr, VarExpr):
                 name = expr.name
                 return AssignExpr(name, value)
+            elif isinstance(expr, GetExpr):
+                return SetExpr(expr.object, expr.name, value)
             self.error(equals, "Invalid assignment target.")
         return expr
 
@@ -232,6 +249,9 @@ class Parser:
         while True:
             if self.match([TokenType.LEFT_PAREN]):
                 expr = self.finish_call(expr)
+            elif self.match([TokenType.DOT]):
+                name = self.consume(TokenType.IDENTIFIER, 'Expect property name after "."')
+                expr = GetExpr(expr, name)
             else:
                 break
         return expr

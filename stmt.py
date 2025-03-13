@@ -1,11 +1,10 @@
-from expr import Expr
+from expr import Expr, VarExpr
 from lox_token import Token
 from typing import List
 
 class Stmt:
 	def accept(self, visitor):
 		raise Exception('accept() method not yet implemented')
-
 
 class FunctionStatement(Stmt):
 	def __init__(self, name: Token, params: List[Token], body: List[Stmt]):
@@ -19,6 +18,21 @@ class FunctionStatement(Stmt):
 
 	def accept(self, visitor):
 		return visitor.visit_function_statement(self)
+
+
+class ClassStatement(Stmt):
+	# def __init__(self, name: Token, super_class: VarExpr, methods: List[FunctionStatement]):
+	def __init__(self, name: Token, methods: List[FunctionStatement]):
+		assert isinstance(name, Token)
+		# assert isinstance(super_class, VarExpr)
+		assert isinstance(methods[0], FunctionStatement)
+
+		self.name = name
+		# self.super_class = super_class
+		self.methods = methods
+
+	def accept(self, visitor):
+		return visitor.visit_class_statement(self)
 
 
 class ReturnStatement(Stmt):

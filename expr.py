@@ -21,6 +21,32 @@ class CallExpr(Expr):
 		return visitor.visit_call_expr(self)
 
 
+class GetExpr(Expr):
+	def __init__(self, object: Expr, name: Token):
+		assert isinstance(object, Expr)
+		assert isinstance(name, Token)
+
+		self.object = object
+		self.name = name
+
+	def accept(self, visitor):
+		return visitor.visit_get_expr(self)
+
+
+class SetExpr(Expr):
+	def __init__(self, object: Expr, name: Token, value: Expr):
+		assert isinstance(object, Expr)
+		assert isinstance(name, Token)
+		assert isinstance(value, Expr)
+
+		self.object = object
+		self.name = name
+		self.value = value
+
+	def accept(self, visitor):
+		return visitor.visit_set_expr(self)
+
+
 class LogicalExpr(Expr):
 	def __init__(self, left: Expr, operator: Token, right: Expr):
 		assert isinstance(left, Expr)

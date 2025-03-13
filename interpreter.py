@@ -1,9 +1,11 @@
 import time
-from expr import Expr, AssignExpr, LogicalExpr
+from expr import Expr, AssignExpr, LogicalExpr, GetExpr, SetExpr
 from lox_token import TokenType, Token
+from lox_class import LoxClass
+from lox_instance import LoxInstance
 from runtime_error import LoxRuntimeError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, Stmt, BlockStatement, IfStatement, \
-    WhileStatement, FunctionStatement, ReturnStatement
+    WhileStatement, FunctionStatement, ReturnStatement, ClassStatement
 from typing import List
 from environment import Environment
 from lox_callable import LoxCallable
@@ -58,6 +60,11 @@ class Interpreter:
                              
     def visit_block_statement(self, stmt: BlockStatement):
         self.execute_block(stmt.statements, Environment(self.environment))
+
+    def visit_class_statement(self, stmt: ClassStatement):
+        self.environment.define(stmt.name.lexeme, None)
+        lox_class = LoxClass(stmt.name.lexeme)
+        self.environment.assign(stmt.name, lox_class)
 
     def visit_expression_statement(self, stmt: ExpressionStatement):
         self.evaluate(stmt.expression)
@@ -120,6 +127,14 @@ class Interpreter:
             if not self.is_truthy(left):
                 return left
         return self.evaluate(expr.right)
+
+    def visit_set_expr(self, expr: SetExpr):
+        object = self.evaluate(expr.object)
+        if not isinstance(object, LoxInstance):
+            raise LoxRuntimeError(expr.name, 'Only instances have fields')
+        value = self.evaluate(expr.value)
+        object.set(expr.name, value)
+        return value
 
     def visit_grouping_expr(self, expr: Expr):
         return self.evaluate(expr.expression)
@@ -188,6 +203,13 @@ class Interpreter:
             raise LoxRuntimeError(expr.paren, f'Expected {callee.arity()} arguments but got {len(arguments)}')
         
         return callee.call(self, arguments)
+
+    def visit_get_expr(self, expr: GetExpr):
+        object = self.evaluate(expr.object)
+        if isinstance(object, LoxInstance):
+            return object.get(expr.name)
+        raise LoxRuntimeError(expr.name, 'Only instances have properties')
+
 
     def is_truthy(self, value):
         """

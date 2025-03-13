@@ -1,8 +1,8 @@
 from typing import List, Union
 from enum import Enum, auto
 from stmt import Stmt, BlockStatement, VarStatement, FunctionStatement, ExpressionStatement, IfStatement, PrintStatement, \
-                 ReturnStatement, WhileStatement
-from expr import Expr, Binary, CallExpr, Grouping, Literal, LogicalExpr, Unary
+                 ReturnStatement, WhileStatement, ClassStatement
+from expr import Expr, Binary, CallExpr, Grouping, Literal, LogicalExpr, Unary, GetExpr, SetExpr
 
 
 
@@ -22,6 +22,10 @@ class Resolver:
         self.begin_scope()
         self.resolve_list(stmt.statements)
         self.end_scope()
+
+    def visit_class_statement(self, stmt: ClassStatement):
+        self.declare(stmt.name)
+        self.define(stmt.name)
 
     def visit_var_statement(self, stmt: VarStatement):
         self.declare(stmt.name)
@@ -74,6 +78,9 @@ class Resolver:
         for argument in expr.arguments:
             self.resolve(argument)
 
+    def visit_get_expr(self, expr: GetExpr):
+        self.resolve(expr.object)
+
     def visit_grouping_expr(self, expr: Grouping):
         self.resolve(expr.expression)
 
@@ -83,6 +90,10 @@ class Resolver:
     def visit_logical_expr(self, expr: LogicalExpr):
         self.resolve(expr.left)
         self.resolve(expr.right)
+
+    def visit_set_expr(self, expr: SetExpr):
+        self.resolve(expr.value)
+        self.resolve(expr.object)
 
     def visit_unary_expr(self, expr: Unary):
         self.resolve(expr.right)
