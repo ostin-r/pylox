@@ -35,12 +35,13 @@ counter(); // "2".
 
 class TestClass {
   wow() {  // class methods do not use the "fun" keyword
-    return "wow";
+    print "wow";
   }
 }
 
 var test_class = TestClass();
 print test_class;
+TestClass().wow();
 
 test_class.new_field = 1;
 print test_class.new_field;

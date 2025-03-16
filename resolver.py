@@ -9,6 +9,7 @@ from expr import Expr, Binary, CallExpr, Grouping, Literal, LogicalExpr, Unary, 
 class FunctionType(Enum):
     NONE = auto()
     FUNCTION = auto()
+    METHOD = auto()
 
 
 class Resolver:
@@ -25,6 +26,8 @@ class Resolver:
 
     def visit_class_statement(self, stmt: ClassStatement):
         self.declare(stmt.name)
+        for method in stmt.methods:
+            self.resolve_function(method, FunctionType.METHOD)
         self.define(stmt.name)
 
     def visit_var_statement(self, stmt: VarStatement):
