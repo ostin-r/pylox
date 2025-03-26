@@ -1,7 +1,7 @@
 from typing import List
 from lox_token import Token, TokenType
 from expr import Literal, Binary, Unary, Grouping, VarExpr, AssignExpr, LogicalExpr, CallExpr, GetExpr, \
-                 SetExpr
+                 SetExpr, ThisExpr
 from error_handling import ParseError
 from stmt import PrintStatement, ExpressionStatement, VarStatement, BlockStatement, IfStatement, \
                  WhileStatement, FunctionStatement, ReturnStatement, ClassStatement
@@ -284,6 +284,8 @@ class Parser:
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, 'Expect ")" after expression')
             return Grouping(expr)
+        if self.match([TokenType.THIS]):
+            return ThisExpr(self.previous())
         raise self.error(self.peek(), 'Expected expression')
 
     def match(self, token_types: list) -> bool:

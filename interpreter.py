@@ -118,6 +118,9 @@ class Interpreter:
         else:
             self.globals.assign(expr.name, value)
         return value
+
+    def visit_this_expr(self, expr: Expr):
+        return self.lookup_variable(expr.keyword, expr)
     
     def visit_literal_expr(self, expr: Expr):
         return expr.value

@@ -5,7 +5,15 @@ from typing import List
 class Expr:
 	pass
 
+class ThisExpr(Expr):
+	def __init__(self, keyword: Token):
+		assert isinstance(keyword, Token)
+		self.keyword = keyword
 
+	def accept(self, visitor):
+		return visitor.visit_this_expr(self)
+
+	
 class CallExpr(Expr):
 	def __init__(self, callee: Expr, paren: Token, arguments: List[Expr] or None):
 		assert isinstance(callee, Expr)

@@ -2,7 +2,7 @@ from typing import List, Union
 from enum import Enum, auto
 from stmt import Stmt, BlockStatement, VarStatement, FunctionStatement, ExpressionStatement, IfStatement, PrintStatement, \
                  ReturnStatement, WhileStatement, ClassStatement
-from expr import Expr, Binary, CallExpr, Grouping, Literal, LogicalExpr, Unary, GetExpr, SetExpr
+from expr import Expr, Binary, CallExpr, Grouping, Literal, LogicalExpr, Unary, GetExpr, SetExpr, ThisExpr
 
 
 
@@ -12,12 +12,18 @@ class FunctionType(Enum):
     METHOD = auto()
 
 
+class ClassType(Enum):
+    NONE = auto()
+    CLASS = auto()
+
+
 class Resolver:
     def __init__(self, interpreter, lox):
         self.interpreter = interpreter
         self.lox = lox
         self.scopes = []
         self.current_function = FunctionType.NONE
+        self.current_class = ClassType.NONE
 
     def visit_block_statement(self, stmt: BlockStatement):
         self.begin_scope()
@@ -25,16 +31,30 @@ class Resolver:
         self.end_scope()
 
     def visit_class_statement(self, stmt: ClassStatement):
+        enclosing_class = self.current_class
+        self.current_class = ClassType.CLASS
         self.declare(stmt.name)
+
+        self.begin_scope() # add 'this' to the scope of the class manually
+        self.scopes[-1]['this'] = True
+      
         for method in stmt.methods:
             self.resolve_function(method, FunctionType.METHOD)
         self.define(stmt.name)
+
+        self.end_scope()
+        self.current_class = enclosing_class
 
     def visit_var_statement(self, stmt: VarStatement):
         self.declare(stmt.name)
         if (stmt.initializer is not None):
             self.resolve(stmt.initializer)
         self.define(stmt.name)
+
+    def visit_this_expr(self, expr: ThisExpr):
+        if self.current_class == ClassType.NONE:
+            self.lox.pylox_error(expr.keyword.line, 'Cannot use "this" outside of a class')
+        self.resolve_local(expr, expr.keyword)
 
     def visit_var_expr(self, expr: Expr):
         if len(self.scopes) and self.scopes[-1].get(expr.name.lexeme) is False:

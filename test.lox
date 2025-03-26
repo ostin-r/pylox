@@ -37,11 +37,19 @@ class TestClass {
   wow() {  // class methods do not use the "fun" keyword
     print "wow";
   }
+
+  yeehaw() {
+    print this.message;
+  }
 }
 
 var test_class = TestClass();
 print test_class;
 TestClass().wow();
+
+var test_this = TestClass();
+test_this.message = "yeehaw";
+test_this.yeehaw();
 
 test_class.new_field = 1;
 print test_class.new_field;
