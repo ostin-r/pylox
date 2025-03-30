@@ -18,7 +18,7 @@ After cloning the repository, run:
 ```
 python3 main.py lox_file.lox
 ```
-I've included a file called `test.lox` with a myriad of different scenarios to make sure everything is working.
+I've included a file called `test.lox` with a myriad of different scenarios to make sure everything is working.  There is not a simple `lox` command available on the command line, as this project is meant to be mainly educational and does not need any more additions for usability.
 
 ## Notes on The Interpreter's Design
 The interpreter is built in Python, using only Python's standard library.  It uses the "recursive descent" pattern for parsing the tokens into a usable AST for both the resolver and the interpreter; a pattern that is useful when developing an interpreter as a one-man-show since it does not require using any fancy libraries.
