@@ -16,10 +16,16 @@ class LoxClass(LoxCallable):
 
     def call(self, interpreter, arguments):
         lox_instance = LoxInstance(self)
+        initializer = self.find_method('init')
+        if initializer:
+            initializer.bind(lox_instance).call(interpreter, arguments)
         return lox_instance
 
     def arity(self):
-        return 0
+        initializer = self.find_method('init')
+        if initializer:
+            return 0
+        return initializer.arity()
         
     def __str__(self):
         return f'<Lox Class:{self.name}>'

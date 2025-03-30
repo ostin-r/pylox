@@ -34,8 +34,8 @@ class Environment:
             return self.enclosing.get(name)
         raise LoxRuntimeError(name, f'Undefined variable: {key}')
 
-    def get_at(self, distance: int, name: Token):
-        return self.ancestor(distance).values.get(name.lexeme)
+    def get_at(self, distance: int, name: str):
+        return self.ancestor(distance).values.get(name)
 
     def assign_at(self, distance: int, name: Token, value):
         ancestor = self.ancestor(distance)

@@ -65,7 +65,8 @@ class Interpreter:
         self.environment.define(stmt.name.lexeme, None)
         methods = {}
         for method in stmt.methods:
-            function = LoxFunction(method, self.environment)
+            is_initializer = method.name.lexeme == 'init'
+            function = LoxFunction(method, self.environment, is_initializer)
             methods[method.name.lexeme] = function
         lox_class = LoxClass(stmt.name.lexeme, methods)
         self.environment.assign(stmt.name, lox_class)
@@ -75,7 +76,7 @@ class Interpreter:
         return None
 
     def visit_function_statement(self, stmt: FunctionStatement):
-        function = LoxFunction(stmt, self.environment)
+        function = LoxFunction(stmt, self.environment, False)
         self.environment.define(stmt.name.lexeme, function)
         return None
 
@@ -161,7 +162,7 @@ class Interpreter:
     def lookup_variable(self, name: Token, expr: Expr):
         distance = self.locals.get(expr)
         if distance is not None:
-            return self.environment.get_at(distance, name)
+            return self.environment.get_at(distance, name.lexeme)
         else:
             return self.globals.get(name)
             

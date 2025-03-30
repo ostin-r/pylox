@@ -36,9 +36,10 @@ class ClassStatement(Stmt):
 
 
 class ReturnStatement(Stmt):
-	def __init__(self, keyword: Token, value: Expr):
+	def __init__(self, keyword: Token, value: Expr or None):
 		assert isinstance(keyword, Token)
-		assert isinstance(value, Expr)
+		if value is not None:
+			assert isinstance(value, Expr)
 
 		self.keyword = keyword
 		self.value = value

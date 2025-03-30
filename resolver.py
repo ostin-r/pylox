@@ -10,6 +10,7 @@ class FunctionType(Enum):
     NONE = auto()
     FUNCTION = auto()
     METHOD = auto()
+    INITIALIZER = auto()
 
 
 class ClassType(Enum):
@@ -39,7 +40,11 @@ class Resolver:
         self.scopes[-1]['this'] = True
       
         for method in stmt.methods:
-            self.resolve_function(method, FunctionType.METHOD)
+            if method.name.lexeme == 'init':
+                declaration = FunctionType.INITIALIZER
+            else:
+                declaration = FunctionType.METHOD
+            self.resolve_function(method, declaration)
         self.define(stmt.name)
 
         self.end_scope()
@@ -86,6 +91,8 @@ class Resolver:
         if self.current_function == FunctionType.NONE:
             self.lox.pylox_error(stmt.keyword.line, "Cannot return from top-level code")
         if stmt.value is not None:
+            if self.current_function == FunctionType.INITIALIZER:
+                self.lox.pylox_error(stmt.keyword.line, 'Cannot return from class initializer')
             self.resolve(stmt.value)
         
     def visit_while_statement(self, stmt: WhileStatement):
