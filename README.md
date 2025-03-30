@@ -13,6 +13,13 @@ Lox is a learning language written by Robert Nystrom, the "learn to create a pro
 
 Pylox is a python interpreter for Lox.
 
+## Running the Interpreter
+After cloning the repository, run:
+```
+python3 main.py lox_file.lox
+```
+I've included a file called `test.lox` with a myriad of different scenarios to make sure everything is working.
+
 ## Notes on The Interpreter's Design
 The interpreter is built in Python, using only Python's standard library.  It uses the "recursive descent" pattern for parsing the tokens into a usable AST for both the resolver and the interpreter; a pattern that is useful when developing an interpreter as a one-man-show since it does not require using any fancy libraries.
 
