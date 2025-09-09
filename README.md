@@ -47,14 +47,14 @@ class DiningPerson():
   def visit_fork():
     pass # implement method for using a fork when eating
 
-class WashingDishesPerson():
+class DishWasher():
   def visit_spoon():
     pass # implement method for washing a spoon
 
   def visit_fork():
     pass # implement method for washing a fork
 ```
-Now if we need to add a new utensil such as a knife, we only need to add a knife visitor function (`visit_knife`, probably) in the `WashingDishesPerson` and `DiningPerson` classes.  Within these classes, we can simply call the `accept` method on whatever object we encounter and the behavior is determined by the calling class.<br/>
+Now if we need to add a new utensil such as a knife, we only need to add a knife visitor function (`visit_knife`, probably) in the `DishWasher` and `DiningPerson` classes.  Within these classes, we can simply call the `accept` method on whatever object we encounter and the behavior is determined by the calling class.<br/>
 
 This pattern was particularly useful in the case where a new feature needed to be added - such as classes or functions and instead of adding a massive class that handles how it is interpreted or resolved, it could be added with a simple `accept` method and that logic could be offloaded onto the interpreter and resolver.<br/>
 
