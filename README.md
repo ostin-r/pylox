@@ -157,6 +157,6 @@ class Beets {
 ```
 
 ### Built-In Functions
-Lox has one built in function: `clock()`, which returns unix time stamp.
+Lox has one built in function: `clock()`, which returns the unix time stamp.
 
 
